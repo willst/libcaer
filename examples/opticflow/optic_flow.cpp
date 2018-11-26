@@ -13,14 +13,19 @@
 
 namespace py = pybind11;
 
-using namespace cv;
 using namespace std;
+using namespace cv;
 
 //command line to buld shared library
 //g++ -std=c++11 -fPIC -shared -Wno-undef -I/usr/include/python2.7 -I/usr/include/eigen3 -I/usr/local/include/pybind11 -I/usr/lib/python2.7/site-packages/numpy/core/include -O3 $(pkg-config --cflags-only-I opencv) $(pkg-config --libs opencv) optic_flow.cpp -o optic_flow.so
 
+namespace opticflow {
+
+static const Scalar LINE_COLOR = Scalar(0, 255, 0);
+static const Scalar CIRCLE_COLOR = Scalar(255, 0, 0);
+
 template <class T>
-Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> convertCV (const cv::Mat_<T>& src) {
+static Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> convertCV (const Mat_<T>& src) {
     if ( src.empty() )
         return Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>();
 
@@ -92,26 +97,25 @@ static void calcOptFlowMap(vector<Point2f>& features_p, vector<Point2f>& feature
             const int x = cvRound(v_p->x);
             const int y = cvRound(v_p->y);
 
-            flow_vx[y][x] += v_n->x - v_p -> x;
-            flow_vy[y][x] += v_n->y - v_p -> y;
+            flow_vx[y][x] += (v_n->x - v_p -> x);
+            flow_vy[y][x] += (v_n->y - v_p -> y);
             flow_count[y][x] ++;
         }
 }
 
-static const Scalar LINE_COLOR = Scalar(0, 255, 0);
-static const Scalar CIRCLE_COLOR = Scalar(255, 0, 0);
-
+//http://www.scholarpedia.org/article/Optic_flow
+//https://docs.opencv.org/3.4.3/de/d14/classcv_1_1SparseOpticalFlow.html
+//http://funvision.blogspot.com/2016/02/opencv-31-tutorial-optical-flow.html
 class OpticFlow
 {
     private:
-        Mat flow, cflow, frame;
+        Mat flow, cflow;
         UMat gray, prevgray, uflow;
-        vector<cv::Point2f> features_prev, features_next;
+        vector<Point2f> features_prev, features_next;
 
         Mat1f flow_vx, flow_vy;
         Mat1i flow_count;
 
-        VideoCapture cap;
         bool do_use_sparse;
         bool do_draw_vectors;
 
@@ -121,33 +125,21 @@ class OpticFlow
             do_use_sparse = use_sparse;
             do_draw_vectors = draw_vectors;
 
-            cap = VideoCapture("visiontraffic.avi");
-
-            if(!cap.isOpened())
-                exit (-1);
-
-            cap >> frame;
-
-            flow_vx = Mat1f(frame.rows,frame.cols);
-            flow_vy = Mat1f(frame.rows,frame.cols);
-            flow_count = Mat1i(frame.rows,frame.cols);
-
             if (do_draw_vectors)
                 namedWindow("flow", 1);
-
         };
+
+        void initFlows(const int rows, const int cols) {
+            flow_vx = Mat1f(rows,cols);
+            flow_vy = Mat1f(rows,cols);
+            flow_count = Mat1i(rows,cols);
+        }
 
         Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> getVx() { return convertCV(flow_vx); }
         Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> getVy() { return convertCV(flow_vy); }
         Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> getCount() { return convertCV(flow_count); }
 
-        bool processFrame() {
-            cap >> frame;
-            if ( frame.empty() ) {
-                std::cout << "Video frame empty; likely end of file. \n";
-                return false;
-            }
-
+        bool processFrame(const Mat& frame) {
             if (do_use_sparse)
                 return processFrameSparse(frame);
             else
@@ -216,26 +208,64 @@ class OpticFlow
 
 };
 
+class DemoOpticFlow {
+    private:
+        OpticFlow demoFlow = OpticFlow(true, true);
+        VideoCapture cap;
+        Mat frame;
+
+    public:
+        DemoOpticFlow(const std::string &demo_video_path) {
+
+        cap = VideoCapture(demo_video_path);
+
+         if(!cap.isOpened())
+            exit (-1);
+
+        cap >> frame;
+        demoFlow.initFlows(frame.rows,frame.cols);
+
+        };
+
+        bool demoProcessFrame() {
+            cap >> frame;
+            if ( frame.empty() ) {
+                std::cout << "Video frame empty; likely end of file. \n";
+                return false;
+            }
+
+            return demoFlow.processFrame(frame);
+        }
+
+        Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> getVx() { return demoFlow.getVx(); }
+        Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> getVy() { return demoFlow.getVy(); }
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> getCount() { return demoFlow.getCount(); }
+
+
+};
+
+}; //namespace: opticflow
+
 
 PYBIND11_MODULE(optic_flow, m) {
 
-    py::class_<OpticFlow>(m, "OpticFlow")
-        .def(py::init<>())
-        .def("getVx", &OpticFlow::getVx, py::return_value_policy::reference_internal)
-        .def("getVy", &OpticFlow::getVy, py::return_value_policy::reference_internal)
-        .def("getCount", &OpticFlow::getCount, py::return_value_policy::reference_internal)
-        .def("processFrame", &OpticFlow::processFrame)
+    py::class_<opticflow::DemoOpticFlow>(m, "OpticFlow")
+        .def(py::init<const std::string &>())
+        .def("getVx", &opticflow::DemoOpticFlow::getVx, py::return_value_policy::reference_internal)
+        .def("getVy", &opticflow::DemoOpticFlow::getVy, py::return_value_policy::reference_internal)
+        .def("getCount", &opticflow::DemoOpticFlow::getCount, py::return_value_policy::reference_internal)
+        .def("demoProcessFrame", &opticflow::DemoOpticFlow::demoProcessFrame)
     ;
 };
 
 
 int main()
 {
-    OpticFlow optic_flow = OpticFlow();
+    DemoOpticFlow demo_flow = DemoOpticFlow('visiontraffic.avi');
 
     for(;;)
     {
-        if (!optic_flow.processFrame())
+        if (!demo_flow.processFrame())
             break;
     }
     return 0;

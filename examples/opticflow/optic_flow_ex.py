@@ -10,9 +10,9 @@ import numpy as np
 
 if __name__ == "__main__":
 
-    of = optic_flow.OpticFlow()
+    of = optic_flow.OpticFlow('visiontraffic.avi')
 
-    while of.processFrame():
+    while of.demoProcessFrame():
         c = of.getCount()
         x = of.getVx()
         y = of.getVy()
