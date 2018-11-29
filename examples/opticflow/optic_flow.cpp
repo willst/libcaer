@@ -19,6 +19,13 @@ using namespace cv;
 //command line to buld shared library
 //g++ -std=c++11 -fPIC -shared -Wno-undef -I/usr/include/python2.7 -I/usr/include/eigen3 -I/usr/local/include/pybind11 -I/usr/lib/python2.7/site-packages/numpy/core/include -O3 $(pkg-config --cflags-only-I opencv) $(pkg-config --libs opencv) optic_flow.cpp -o optic_flow.so
 
+
+//RasPi
+//export PKG_CONFIG_PATH=/home/pi/miniconda/envs/dvs/lib/pkgconfig
+//g++ -std=c++11 -fPIC -shared -Wno-undef -I/usr/local/include/pybind11 -I${CONDA_ENV_PATH}/lib/python2.7/site-packages/numpy/core/include -O3 $(pkg-config --cflags --libs python2 eigen3 opencv) optic_flow.cpp -o optic_flow.so
+
+
+
 namespace opticflow {
 
 static const Scalar LINE_COLOR = Scalar(0, 255, 0);
@@ -120,7 +127,7 @@ class OpticFlow
         bool do_draw_vectors;
 
     public:
-        OpticFlow(const bool use_sparse = true, const bool draw_vectors = true) {
+        OpticFlow(const bool use_sparse = true, const bool draw_vectors = false) {
 
             do_use_sparse = use_sparse;
             do_draw_vectors = draw_vectors;
@@ -227,7 +234,7 @@ class DemoOpticFlow {
 
         };
 
-        bool demoProcessFrame() {
+        bool processFrame() {
             cap >> frame;
             if ( frame.empty() ) {
                 std::cout << "Video frame empty; likely end of file. \n";
@@ -245,28 +252,3 @@ class DemoOpticFlow {
 };
 
 }; //namespace: opticflow
-
-
-PYBIND11_MODULE(optic_flow, m) {
-
-    py::class_<opticflow::DemoOpticFlow>(m, "OpticFlow")
-        .def(py::init<const std::string &>())
-        .def("getVx", &opticflow::DemoOpticFlow::getVx, py::return_value_policy::reference_internal)
-        .def("getVy", &opticflow::DemoOpticFlow::getVy, py::return_value_policy::reference_internal)
-        .def("getCount", &opticflow::DemoOpticFlow::getCount, py::return_value_policy::reference_internal)
-        .def("demoProcessFrame", &opticflow::DemoOpticFlow::demoProcessFrame)
-    ;
-};
-
-
-int main()
-{
-    DemoOpticFlow demo_flow = DemoOpticFlow('visiontraffic.avi');
-
-    for(;;)
-    {
-        if (!demo_flow.processFrame())
-            break;
-    }
-    return 0;
-}

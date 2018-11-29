@@ -7,12 +7,14 @@ if sys.version_info >= (3, 0):
 
 import optic_flow
 import numpy as np
+import time
 
 if __name__ == "__main__":
 
-    of = optic_flow.OpticFlow('visiontraffic.avi')
+    ltime = time.time()
+    of = optic_flow.DVSOpticFlow()
 
-    while of.demoProcessFrame():
+    while of.processFrame():
         c = of.getCount()
         x = of.getVx()
         y = of.getVy()
@@ -25,4 +27,7 @@ if __name__ == "__main__":
         avg_y = float(np.sum(y) / cnt)
 
         print("Avg velocity %f, %f" % (avg_x, avg_y))
+        ntime = time.time()
+        print('Process rate is %f' % (1.0 / (ntime - ltime)))
+        ltime = ntime
 
