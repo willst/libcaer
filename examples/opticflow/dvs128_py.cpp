@@ -25,8 +25,10 @@ namespace py = pybind11;
 
 
 //RasPi: export PKG_CONFIG_PATH=${CONDA_ENV_PATH}/lib/pkgconfig
-//g++ -std=c++11 -fPIC -shared -Wno-undef -O3 -I/usr/local/include/pybind11 -I${CONDA_ENV_PATH}/lib/python2.7/site-packages/numpy/core/include $(pkg-config --cflags --libs python2 eigen3 opencv) -D_DEFAULT_SOURCE=1 -lcaer dvs128_py.cpp -o optic_flow.so
+//export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${CONDA_ENV_PATH}/lib
+//g++ -std=c++11 -fPIC -shared -Wno-undef -O3 -I/usr/local/include/pybind11 -I${CONDA_ENV_PATH}/lib/python2.7/site-packages/numpy/core/include $(pkg-config --cflags --libs python2 eigen3 opencv libcaer) dvs128_py.cpp -o optic_flow.so
 
+//g++ -std=c++11 -fPIC -Wno-undef -O3 -I/usr/local/include/pybind11 $(pkg-config --cflags --libs python2 eigen3 opencv libcaer) dvs128_simple.cpp -o dvs128_simple
 
 using namespace std;
 using namespace cv;
@@ -51,6 +53,7 @@ namespace opticflow {
 class DvsConnector
 {
     private:
+        // Open a DVS128, give it a device ID of 1, and don't care about USB bus or SN restrictions.
         libcaer::devices::dvs128 dvs128Handle = libcaer::devices::dvs128(1, 0, 0, "");
         libcaer::filters::DVSNoise dvsNoiseFilter = libcaer::filters::DVSNoise(128, 128);
         cv::Mat cvEvents = cv::Mat(128,128,CV_8UC3, cv::Vec3b{127, 127, 127});
@@ -59,9 +62,6 @@ class DvsConnector
         DvsConnector()
         {
             printf("Opening connection for DVS. \n");
-
-            // Open a DVS128, give it a device ID of 1, and don't care about USB bus or SN restrictions.
-            dvs128Handle = libcaer::devices::dvs128(1, 0, 0, "");
 
             // Send the default configuration before using the device.
             // No configuration is sent automatically!
