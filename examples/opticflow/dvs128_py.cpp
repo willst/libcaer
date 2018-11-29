@@ -21,11 +21,11 @@ namespace py = pybind11;
 #error "This example requires OpenCV support in libcaer to be enabled."
 #endif
 
-//g++ -std=c++11 -fPIC -shared -Wno-undef -O3 -I/usr/local/include/pybind11 -I/usr/lib/python2.7/site-packages/numpy/core/include $(pkg-config --cflags --libs python2 eigen3 opencv) dvs128_py.cpp -o optic_flow.so
+//g++ -std=c++11 -fPIC -shared -Wno-undef -O3 -I/usr/local/include/pybind11 -I/usr/lib/python2.7/site-packages/numpy/core/include $(pkg-config --cflags --libs python2 eigen3 opencv) -D_DEFAULT_SOURCE=1 -lcaer dvs128_py.cpp -o optic_flow.so
 
 
 //RasPi: export PKG_CONFIG_PATH=${CONDA_ENV_PATH}/lib/pkgconfig
-//g++ -std=c++11 -fPIC -shared -Wno-undef -O3 -I/usr/local/include/pybind11 -I${CONDA_ENV_PATH}/lib/python2.7/site-packages/numpy/core/include $(pkg-config --cflags --libs python2 eigen3 opencv) dvs128_py.cpp -o optic_flow.so
+//g++ -std=c++11 -fPIC -shared -Wno-undef -O3 -I/usr/local/include/pybind11 -I${CONDA_ENV_PATH}/lib/python2.7/site-packages/numpy/core/include $(pkg-config --cflags --libs python2 eigen3 opencv) -D_DEFAULT_SOURCE=1 -lcaer dvs128_py.cpp -o optic_flow.so
 
 
 using namespace std;
@@ -217,7 +217,7 @@ class DVSOpticFlow {
 }; //namespace: opticflow
 
 
-PYBIND11_MODULE(dvs_flow, m) {
+PYBIND11_MODULE(optic_flow, m) {
 
     py::class_<opticflow::DemoOpticFlow>(m, "OpticFlow")
         .def(py::init<const std::string &>())
