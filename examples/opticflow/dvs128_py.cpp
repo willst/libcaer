@@ -153,7 +153,7 @@ class DvsConnector
                         dvsNoiseFilter.apply(*polarity);
 
                         //printf("Got polarity packet with %d events, after filtering remaining %d events.\n",
-                            polarity->getEventNumber(), polarity->getEventValid());
+                        //    polarity->getEventNumber(), polarity->getEventValid());
 
                         // Get full timestamp and addresses of first event.
                         const libcaer::events::PolarityEvent &firstEvent = (*polarity)[0];
