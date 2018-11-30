@@ -14,20 +14,22 @@ if __name__ == "__main__":
     ltime = time.time()
     of = optic_flow.DVSOpticFlow()
 
-    while of.processFrame():
-        c = of.getCount()
-        x = of.getVx()
-        y = of.getVy()
+    while True:
+        has_data = of.processFrame()
+        if has_data:
+            c = of.getCount()
+            x = of.getVx()
+            y = of.getVy()
 
-        cnt = int(np.sum(c))
+            cnt = int(np.sum(c))
 
-        print("Events on frame is %i" % cnt)
+            print("Events on frame is %i" % cnt)
 
-        avg_x = float(np.sum(x) / cnt)
-        avg_y = float(np.sum(y) / cnt)
+            avg_x = float(np.sum(x) / cnt)
+            avg_y = float(np.sum(y) / cnt)
 
-        print("Avg velocity %f, %f" % (avg_x, avg_y))
-        ntime = time.time()
-        print('Process rate is %f' % (1.0 / (ntime - ltime)))
-        ltime = ntime
+            print("Avg velocity %f, %f" % (avg_x, avg_y))
+            ntime = time.time()
+            print('Process rate is %f' % (1.0 / (ntime - ltime)))
+            ltime = ntime
 
