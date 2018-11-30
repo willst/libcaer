@@ -201,7 +201,6 @@ class DVSOpticFlow {
                 return demoFlow.processFrame(dvsConnector.getEvents());
             }
             else {
-                std::cout << "Video frame empty; likely end of file. \n";
                 return false;
             }
 
