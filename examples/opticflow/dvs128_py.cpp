@@ -4,31 +4,12 @@
 #include "libcaercpp/devices/dvs128.hpp"
 #include "libcaercpp/filters/dvs_noise.hpp"
 
-#include "opencv2/core.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/videoio.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/video/tracking.hpp"
-
 #include "pybind11/pybind11.h"
 #include "pybind11/eigen.h"
 
-namespace py = pybind11;
-
 #include "optic_flow.cpp"
 
-#if !defined(LIBCAER_HAVE_OPENCV) || LIBCAER_HAVE_OPENCV == 0
-#error "This example requires OpenCV support in libcaer to be enabled."
-#endif
-
-//g++ -std=c++11 -fPIC -shared -Wno-undef -O3 -I/usr/local/include/pybind11 -I/usr/lib/python2.7/site-packages/numpy/core/include $(pkg-config --cflags --libs python2 eigen3 opencv) -D_DEFAULT_SOURCE=1 -lcaer dvs128_py.cpp -o optic_flow.so
-
-
-//RasPi: export PKG_CONFIG_PATH=${CONDA_ENV_PATH}/lib/pkgconfig
-//export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${CONDA_ENV_PATH}/lib
-//g++ -std=c++11 -fPIC -shared -Wno-undef -O3 -I/usr/local/include/pybind11 -I${CONDA_ENV_PATH}/lib/python2.7/site-packages/numpy/core/include $(pkg-config --cflags --libs python2 eigen3 opencv libcaer) dvs128_py.cpp -o optic_flow.so
-
-//g++ -std=c++11 -fPIC -Wno-undef -O3 -I/usr/local/include/pybind11 $(pkg-config --cflags --libs python2 eigen3 opencv libcaer) dvs128_simple.cpp -o dvs128_simple
+namespace py = pybind11;
 
 using namespace std;
 using namespace cv;

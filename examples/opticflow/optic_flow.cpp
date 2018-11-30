@@ -8,23 +8,8 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/core/eigen.hpp"
 
-#include "pybind11/pybind11.h"
-#include "pybind11/eigen.h"
-
-namespace py = pybind11;
-
 using namespace std;
 using namespace cv;
-
-//command line to buld shared library
-//g++ -std=c++11 -fPIC -shared -Wno-undef -I/usr/include/python2.7 -I/usr/include/eigen3 -I/usr/local/include/pybind11 -I/usr/lib/python2.7/site-packages/numpy/core/include -O3 $(pkg-config --cflags-only-I opencv) $(pkg-config --libs opencv) optic_flow.cpp -o optic_flow.so
-
-
-//RasPi
-//export PKG_CONFIG_PATH=/home/pi/miniconda/envs/dvs/lib/pkgconfig
-//g++ -std=c++11 -fPIC -shared -Wno-undef -I/usr/local/include/pybind11 -I${CONDA_ENV_PATH}/lib/python2.7/site-packages/numpy/core/include -O3 $(pkg-config --cflags --libs python2 eigen3 opencv) optic_flow.cpp -o optic_flow.so
-
-
 
 namespace opticflow {
 
@@ -186,7 +171,7 @@ class OpticFlow
             {
                 cv::goodFeaturesToTrack(prevgray, // the image
                   features_prev,   // the output detected features
-                  1000,  // the maximum number of features
+                  100,  // the maximum number of features
                   0.01,     // quality level
                   10     // min distance between two features
                 );
