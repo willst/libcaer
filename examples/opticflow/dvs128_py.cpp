@@ -134,10 +134,13 @@ class DvsConnector
 
                 printf("\nGot event container with %d packets (allocated).\n", packetContainer->size());
 
+                cvEvents = cv::Mat(dvs128_info.dvsSizeY, dvs128_info.dvsSizeX, CV_8UC3, cv::Vec3b{127, 127, 127});
+                bool has_valid_data = false;
+
                 for (auto &packet : *packetContainer) {
                     if (packet == nullptr) {
                         printf("Packet is empty (not present).\n");
-                        return false; // Skip if nothing there.
+                        continue; // Skip if nothing there.
                     }
 
                     printf("Packet of type %d -> %d events, %d capacity.\n", packet->getEventType(), packet->getEventNumber(),
@@ -147,7 +150,7 @@ class DvsConnector
                         std::shared_ptr<const libcaer::events::PolarityEventPacket> polarity
                             = std::static_pointer_cast<libcaer::events::PolarityEventPacket>(packet);
 
-                        dvsNoiseFilter.apply(*polarity);
+                        //dvsNoiseFilter.apply(*polarity);
 
                         printf("Got polarity packet with %d events, after filtering remaining %d events.\n",
                             polarity->getEventNumber(), polarity->getEventValid());
@@ -162,21 +165,25 @@ class DvsConnector
 
                         printf("First polarity event - ts: %d, x: %d, y: %d, pol: %d.\n", ts, x, y, pol);
 
-                        cvEvents = cv::Mat(dvs128_info.dvsSizeY, dvs128_info.dvsSizeX, CV_8UC3, cv::Vec3b{127, 127, 127});
 
                         for (const auto &e : *polarity) {
                             // Discard invalid events (filtered out).
                             if (!e.isValid()) {
-                                return false;
+                                continue;
+                            }
+
+                            if (!has_valid_data) {
+                                has_valid_data = true;
                             }
 
                             cvEvents.at<cv::Vec3b>(e.getY(), e.getX())
                                 = e.getPolarity() ? cv::Vec3b{255, 255, 255} : cv::Vec3b{0, 0, 0};
                         }
 
-                        return true;
                     }
                 }
+
+                return has_valid_data;
             }
 
             return false; //unexpected to reach here
