@@ -15,6 +15,8 @@ namespace opticflow {
 
 static const Scalar LINE_COLOR = Scalar(0, 255, 0);
 static const Scalar CIRCLE_COLOR = Scalar(255, 0, 0);
+static const Size WIN_SIZE(8, 8);
+static const int MAX_LEVEL= 3;
 
 template <class T>
 static Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> convertCV (const Mat_<T>& src) {
@@ -178,7 +180,7 @@ class OpticFlow
 
 
                 if ( !features_prev.empty() ) {
-                    calcOpticalFlowPyrLK(prevgray, gray, features_prev, features_next, status, err);
+                    calcOpticalFlowPyrLK(prevgray, gray, features_prev, features_next, status, err, WIN_SIZE, MAX_LEVEL);
                     cvtColor(prevgray, cflow, COLOR_GRAY2BGR);
                     calcOptFlowMap(features_prev, features_next, flow_vx, flow_vy, flow_count);
 
