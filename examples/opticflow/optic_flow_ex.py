@@ -12,7 +12,7 @@ import time
 if __name__ == "__main__":
 
     ltime = time.time()
-    of = optic_flow.DVSOpticFlow()
+    of = optic_flow.DVSOpticFlow(True)
 
     while True:
         has_data = of.processFrame()

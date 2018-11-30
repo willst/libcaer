@@ -185,11 +185,12 @@ class DvsConnector
 
 class DVSOpticFlow {
     private:
-        opticflow::OpticFlow demoFlow = opticflow::OpticFlow(true, true);
+        opticflow::OpticFlow demoFlow = opticflow::OpticFlow();
         DvsConnector dvsConnector;
 
     public:
-        DVSOpticFlow() {
+        DVSOpticFlow(const bool draw_vectors = false) {
+        demoFlow = opticflow::OpticFlow(true, draw_vectors);
 
         demoFlow.initFlows(128,128);
 
@@ -228,7 +229,7 @@ PYBIND11_MODULE(optic_flow, m) {
     ;
 
     py::class_<opticflow::DVSOpticFlow>(m, "DVSOpticFlow")
-        .def(py::init<>())
+        .def(py::init<const bool &>())
         .def("getVx", &opticflow::DVSOpticFlow::getVx, py::return_value_policy::reference_internal)
         .def("getVy", &opticflow::DVSOpticFlow::getVy, py::return_value_policy::reference_internal)
         .def("getCount", &opticflow::DVSOpticFlow::getCount, py::return_value_policy::reference_internal)
