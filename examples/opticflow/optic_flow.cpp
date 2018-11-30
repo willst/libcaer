@@ -97,6 +97,32 @@ static void calcOptFlowMap(vector<Point2f>& features_p, vector<Point2f>& feature
         }
 }
 
+static void generateFeatures(const Mat& gray,
+                     vector<Point2f>& features_p, const int step =10)
+{
+    const Point2f emptyPixel = Point2f();
+    features_p = vector<Point2f>();
+
+    for(int y = 0; y < gray.rows; y += step)
+        for(int x = 0; x < gray.cols; x += step)
+        {
+            const Point2f& pixel = gray.at<Point2f>(y, x);
+            if (pixel != emptyPixel) {
+                features_p.push_back(Point2f(y, x));
+            }
+        }
+}
+
+static void generateFeaturesOpenCV(const UMat& prevgray,
+                    vector<Point2f>& features_p) {
+        cv::goodFeaturesToTrack(prevgray, // the image
+          features_p,   // the output detected features
+          100,  // the maximum number of features
+          0.01,     // quality level
+          10     // min distance between two features
+            );
+        }
+
 //http://www.scholarpedia.org/article/Optic_flow
 //https://docs.opencv.org/3.4.3/de/d14/classcv_1_1SparseOpticalFlow.html
 //http://funvision.blogspot.com/2016/02/opencv-31-tutorial-optical-flow.html
@@ -104,7 +130,8 @@ class OpticFlow
 {
     private:
         Mat flow, cflow;
-        UMat gray, prevgray, uflow;
+        UMat gray, prevgray;
+        UMat uflow;
         vector<Point2f> features_prev, features_next;
 
         Mat1f flow_vx, flow_vy;
@@ -120,7 +147,8 @@ class OpticFlow
             do_draw_vectors = draw_vectors;
 
             if (do_draw_vectors)
-                namedWindow("flow", 1);
+                namedWindow("flow", WINDOW_NORMAL);
+                resizeWindow("flow", 128*6,128*6);
         };
 
         void initFlows(const int rows, const int cols) {
@@ -171,12 +199,8 @@ class OpticFlow
 
             if( !prevgray.empty() )
             {
-                cv::goodFeaturesToTrack(prevgray, // the image
-                  features_prev,   // the output detected features
-                  100,  // the maximum number of features
-                  0.01,     // quality level
-                  10     // min distance between two features
-                );
+                generateFeaturesOpenCV(prevgray, features_prev);
+//                generateFeatures(prevgray, features_prev);
 
 
                 if ( !features_prev.empty() ) {
