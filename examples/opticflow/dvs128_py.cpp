@@ -132,38 +132,38 @@ class DvsConnector
                     return false; // Skip if nothing there.
                 }
 
-                printf("\nGot event container with %d packets (allocated).\n", packetContainer->size());
+                //printf("\nGot event container with %d packets (allocated).\n", packetContainer->size());
 
                 cvEvents = cv::Mat(dvs128_info.dvsSizeY, dvs128_info.dvsSizeX, CV_8UC3, cv::Vec3b{127, 127, 127});
                 bool has_valid_data = false;
 
                 for (auto &packet : *packetContainer) {
                     if (packet == nullptr) {
-                        printf("Packet is empty (not present).\n");
+                        //printf("Packet is empty (not present).\n");
                         continue; // Skip if nothing there.
                     }
 
-                    printf("Packet of type %d -> %d events, %d capacity.\n", packet->getEventType(), packet->getEventNumber(),
-                        packet->getEventCapacity());
+                    //printf("Packet of type %d -> %d events, %d capacity.\n", packet->getEventType(), packet->getEventNumber(),
+                    //    packet->getEventCapacity());
 
                     if (packet->getEventType() == POLARITY_EVENT) {
                         std::shared_ptr<const libcaer::events::PolarityEventPacket> polarity
                             = std::static_pointer_cast<libcaer::events::PolarityEventPacket>(packet);
 
-                        //dvsNoiseFilter.apply(*polarity);
+                        dvsNoiseFilter.apply(*polarity);
 
-                        printf("Got polarity packet with %d events, after filtering remaining %d events.\n",
+                        //printf("Got polarity packet with %d events, after filtering remaining %d events.\n",
                             polarity->getEventNumber(), polarity->getEventValid());
 
                         // Get full timestamp and addresses of first event.
                         const libcaer::events::PolarityEvent &firstEvent = (*polarity)[0];
 
-                        int32_t ts = firstEvent.getTimestamp();
-                        uint16_t x = firstEvent.getX();
-                        uint16_t y = firstEvent.getY();
-                        bool pol   = firstEvent.getPolarity();
+                        //int32_t ts = firstEvent.getTimestamp();
+                        //uint16_t x = firstEvent.getX();
+                        //uint16_t y = firstEvent.getY();
+                        //bool pol   = firstEvent.getPolarity();
 
-                        printf("First polarity event - ts: %d, x: %d, y: %d, pol: %d.\n", ts, x, y, pol);
+                        //printf("First polarity event - ts: %d, x: %d, y: %d, pol: %d.\n", ts, x, y, pol);
 
 
                         for (const auto &e : *polarity) {
